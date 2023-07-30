@@ -40,11 +40,15 @@ const Users = () => {
   // log data: console.log('data from server:', data);
 
   const [sorting, setSorting] = useState([]);
+  console.log(sorting);
   let [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
     if (sorting.length !== 0) {
-      const [sortField, sortyBy] = Object.values(sorting[0]);
-      setSearchParams({ sort: `${sortField}:${sortyBy ? 'desc' : 'asc'}` });
+      const sortString = _.map(sorting, (obj) => {
+        const order = obj.desc ? 'desc' : 'asc';
+        return `${obj.id}:${order}`;
+      }).join(',');
+      setSearchParams({ sort: sortString });
     } else {
       setSearchParams(_.omit(Object.fromEntries(searchParams), 'sort'));
     }
@@ -55,12 +59,13 @@ const Users = () => {
     state: {
       sorting,
     },
+
     onSortingChange: setSorting,
+    enableMultiSort: true,
     manualSorting: true,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  console.log('logging sorting state:', sorting[0]);
 
   return (
     <div>
@@ -78,7 +83,7 @@ const Users = () => {
                       },
                     }}
                     key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={() => header.column.toggleSorting(null, true)}
                   >
                     {header.isPlaceholder
                       ? null
