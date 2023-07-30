@@ -35,7 +35,19 @@ app.get('/', (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-  const users = await User.find();
+  // console.log(req.query);
+  const queryObj = { ...req.query };
+
+  delete queryObj['sort'];
+
+  let query = User.find(queryObj);
+
+  if (req.query.sort) {
+    const [sortField, sortBy] = req.query.sort.split(':');
+    query.sort({ [sortField]: sortBy });
+  }
+
+  const users = await query;
   res.status(200).json({ length: users.length, data: users });
 });
 
