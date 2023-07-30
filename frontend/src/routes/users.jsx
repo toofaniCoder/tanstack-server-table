@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect } from 'react';
+
 import {
   TableContainer,
   Table,
@@ -7,7 +10,7 @@ import {
   TableBody,
   Paper,
 } from '@mui/material';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useSearchParams } from 'react-router-dom';
 
 import {
   createColumnHelper,
@@ -15,6 +18,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+
+import _ from 'lodash';
 
 const columnHelper = createColumnHelper();
 
@@ -34,11 +39,28 @@ const Users = () => {
   const data = useLoaderData();
   // log data: console.log('data from server:', data);
 
+  const [sorting, setSorting] = useState([]);
+  let [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (sorting.length !== 0) {
+      const [sortField, sortyBy] = Object.values(sorting[0]);
+      setSearchParams({ sort: `${sortField}:${sortyBy ? 'desc' : 'asc'}` });
+    } else {
+      setSearchParams(_.omit(Object.fromEntries(searchParams), 'sort'));
+    }
+  }, [sorting]);
+
   const table = useReactTable({
     data,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    manualSorting: true,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+  console.log('logging sorting state:', sorting[0]);
 
   return (
     <div>
@@ -48,13 +70,26 @@ const Users = () => {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableCell key={header.id}>
+                  <TableCell
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': {
+                        bgcolor: (theme) => theme.palette.grey[100],
+                      },
+                    }}
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                    {{
+                      asc: ' 🔼',
+                      desc: ' 🔽',
+                    }[header.column.getIsSorted()] ?? null}
                   </TableCell>
                 ))}
               </TableRow>
