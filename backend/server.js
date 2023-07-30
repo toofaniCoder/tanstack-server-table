@@ -41,10 +41,16 @@ app.get('/users', async (req, res) => {
   delete queryObj['sort'];
 
   let query = User.find(queryObj);
-
+  // console.log(req.query);
   if (req.query.sort) {
-    const [sortField, sortBy] = req.query.sort.split(':');
-    query.sort({ [sortField]: sortBy });
+    query.sort(
+      req.query.sort
+        .split(',')
+        .map((el) => ({ [el.split(':')[0]]: el.split(':')[1] }))
+        .reduce((merged, obj) => {
+          return { ...merged, ...obj };
+        }, {})
+    );
   }
 
   const users = await query;
