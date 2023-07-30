@@ -1,5 +1,8 @@
 import ReactDOM from 'react-dom/client';
 
+import axios from 'axios';
+axios.defaults.baseURL = 'http://localhost:3000';
+
 // importing fonts
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -20,6 +23,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Users />,
+        loader: async () => {
+          const { data } = await axios.get('/users');
+          return data.data;
+        },
       },
     ],
   },
