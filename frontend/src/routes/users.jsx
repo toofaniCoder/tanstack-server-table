@@ -8,12 +8,11 @@ import {
   TableBody,
   Paper,
   Stack,
-  Button,
-  Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Pagination,
 } from '@mui/material';
 import { useLoaderData, useSearchParams } from 'react-router-dom';
 
@@ -118,27 +117,14 @@ const Users = () => {
             ))}
           </TableBody>
         </Table>
-        <Stack direction="row" justifyContent={'space-between'} sx={{ p: 3 }}>
-          <Button
-            disabled={!table.getCanPreviousPage()}
-            onClick={() => table.previousPage()}
-            color="primary"
-            variant="contained"
-          >
-            previous page
-          </Button>
-          <Typography>
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
-          </Typography>
-          <Button
-            disabled={!table.getCanNextPage()}
-            onClick={() => table.nextPage()}
-            color="primary"
-            variant="contained"
-          >
-            next page
-          </Button>
+        <Stack direction="row" justifyContent={'center'} sx={{ p: 3 }}>
+          <Pagination
+            page={table.getState().pagination.pageIndex + 1}
+            onChange={(e, val) => table.setPageIndex(val - 1)}
+            count={table.getPageCount()}
+            showFirstButton
+            showLastButton
+          />
         </Stack>
       </TableContainer>
     </div>
