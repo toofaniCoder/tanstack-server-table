@@ -54,7 +54,8 @@ const Users = () => {
     data,
     state: {
       sorting,
-    },
+    },    
+    sortDescFirst: false,
     onSortingChange: setSorting,
     manualSorting: true,
     columns,
