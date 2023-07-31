@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import {
   TableContainer,
   Table,
@@ -7,15 +7,13 @@ import {
   TableCell,
   TableBody,
   Paper,
-  Button,
   Stack,
+  Button,
   Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Box,
-  TextField,
 } from '@mui/material';
 import { useLoaderData, useSearchParams } from 'react-router-dom';
 
@@ -25,7 +23,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
 
 const columnHelper = createColumnHelper();
 
@@ -44,34 +41,35 @@ const columns = [
 const Users = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
+    pageIndex: 0, // page index matlab = page number
+    pageSize: 5, // page size matlab = limit
   });
   const users = useLoaderData();
   // log data: console.log('data from server:', data);
 
-  useEffect(() => {
-    console.log(pagination);
-    setSearchParams({
-      page: pagination.pageIndex + 1,
-      limit: pagination.pageSize,
-    });
-  }, [pagination]);
-
   const table = useReactTable({
     data: users.data,
     columns,
-    state: { pagination },
+    state: {
+      pagination,
+    },
     pageCount: users.totalCount / users.count,
-    onPaginationChange: setPagination,
     manualPagination: true,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  useEffect(() => {
+    setSearchParams({
+      page: table.getState().pagination.pageIndex + 1,
+      limit: table.getState().pagination.pageSize,
+    });
+  }, [pagination]);
+  console.log(table.getState().pagination);
   return (
     <div>
       <TableContainer component={Paper}>
-        <Box component={Stack} direction={'row'} spacing={2} sx={{ p: 2 }}>
+        <Stack sx={{ p: 2 }}>
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">
               show items per page
@@ -80,28 +78,17 @@ const Users = () => {
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
               label="show items per page"
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
             >
-              {[5, 10, 20, 25, 30, 40, 50].map((el, index) => (
-                <MenuItem key={index} value={el}>
+              {[5, 10, 20, 40, 50, 100, 200, 500].map((el) => (
+                <MenuItem key={el} value={el}>
                   {el}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <TextField
-            type="number"
-            value={table.getState().pagination.pageIndex + 1}
-            onChange={(e) => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0;
-              table.setPageIndex(page);
-            }}
-            placeholder="go to page"
-          />
-        </Box>
+        </Stack>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -131,11 +118,12 @@ const Users = () => {
             ))}
           </TableBody>
         </Table>
-        <Stack sx={{ p: 2 }} direction={'row'} justifyContent={'space-between'}>
+        <Stack direction="row" justifyContent={'space-between'} sx={{ p: 3 }}>
           <Button
-            variant="contained"
-            onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            color="primary"
+            variant="contained"
           >
             previous page
           </Button>
@@ -144,9 +132,10 @@ const Users = () => {
             {table.getPageCount()}
           </Typography>
           <Button
-            variant="contained"
-            onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            color="primary"
+            variant="contained"
           >
             next page
           </Button>
