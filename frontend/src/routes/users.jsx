@@ -42,15 +42,17 @@ const Users = () => {
   const [sorting, setSorting] = useState([]);
   console.log(sorting);
   let [searchParams, setSearchParams] = useSearchParams();
-  useEffect(() => {
-    if (sorting.length !== 0) {
-      const sortString = _.map(sorting, (obj) => {
-        const order = obj.desc ? 'desc' : 'asc';
-        return `${obj.id}:${order}`;
-      }).join(',');
-      setSearchParams({ sort: sortString });
+ useEffect(() => {
+    if (sorting.length > 0) {
+      setSearchParams({
+        sort: sorting
+          .map((el) => `${el.id}:${el.desc ? 'desc' : 'asc'}`)
+          .join(','),
+      });
     } else {
-      setSearchParams(_.omit(Object.fromEntries(searchParams), 'sort'));
+      const obj = Object.fromEntries(searchParams);
+      delete obj.sort;
+      setSearchParams(obj);
     }
   }, [sorting]);
 
@@ -60,6 +62,7 @@ const Users = () => {
       sorting,
     },
 
+    sortDescFirst: false,
     onSortingChange: setSorting,
     enableMultiSort: true,
     manualSorting: true,
