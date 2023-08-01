@@ -86,8 +86,8 @@ const Users = () => {
     if (globalFilter.length > 0) {
       setSearchParams({ search: globalFilter });
     } else {
-      setSearchParams((params) => {
-        const newParams = { ...params };
+      setSearchParams(() => {
+        const newParams = Object.fromEntries(searchParams);
         delete newParams.search;
         return newParams;
       });
