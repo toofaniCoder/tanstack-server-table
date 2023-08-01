@@ -87,8 +87,8 @@ const Users = () => {
         search: columnFilters.map((el) => `${el.id}:${el.value}`).join(','),
       });
     } else {
-      setSearchParams((params) => {
-        const newParams = { ...params };
+  setSearchParams(() => {
+        const newParams = Object.fromEntries(searchParams);
         delete newParams.search;
         return newParams;
       });
