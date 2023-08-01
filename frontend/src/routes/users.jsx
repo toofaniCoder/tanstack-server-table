@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from 'react';
 import {
   TableContainer,
   Table,
@@ -6,9 +9,10 @@ import {
   TableCell,
   TableBody,
   Paper,
+  Stack,
+  TextField,
 } from '@mui/material';
-import { useLoaderData } from 'react-router-dom';
-
+import { useLoaderData, useSearchParams } from 'react-router-dom';
 import {
   createColumnHelper,
   flexRender,
@@ -30,20 +34,77 @@ const columns = [
   }),
 ];
 
+function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}) {
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value);
+    }, debounce);
+
+    return () => clearTimeout(timeout);
+  }, [value]);
+
+  return (
+    <TextField
+      {...props}
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value);
+      }}
+    />
+  );
+}
+
 const Users = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [globalFilter, setGlobalFilter] = useState('');
   const data = useLoaderData();
   // log data: console.log('data from server:', data);
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      globalFilter,
+    },
+    manualFiltering: true,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  useEffect(() => {
+    if (globalFilter.length > 0) {
+      setSearchParams({ search: globalFilter });
+    } else {
+      setSearchParams((params) => {
+        const newParams = { ...params };
+        delete newParams.search;
+        return newParams;
+      });
+    }
+  }, [globalFilter]);
 
   return (
     <div>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Stack sx={{ p: 2, position: 'sticky' }}>
+          <DebouncedInput
+            value={globalFilter ?? ''}
+            onChange={(value) => setGlobalFilter(String(value))}
+            placeholder="Search all columns..."
+          />
+        </Stack>
+        <Table>
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
